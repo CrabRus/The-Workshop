@@ -1,0 +1,22 @@
+FROM golang:1.24.2-alpine
+
+WORKDIR /app
+
+# Встановлюємо air для hot reload
+RUN go install github.com/cosmtrek/air@latest
+
+# Копіюємо залежності
+COPY go.* ./
+RUN go mod download
+
+# Копіюємо весь проект
+COPY . .
+
+# Копіюємо конфіг для air
+COPY .air.toml .
+
+# Експонуємо порт
+EXPOSE 8080
+
+# Запускаємо air для розробки з hot reload
+CMD ["air", "-c", ".air.toml"]
