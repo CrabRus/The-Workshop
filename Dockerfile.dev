@@ -1,9 +1,9 @@
-FROM golang:1.24.2-alpine
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
-# Встановлюємо air для hot reload
-RUN go install github.com/cosmtrek/air@latest
+# Встановлюємо air для hot reload (старша версія для Go 1.24.2)
+RUN go install github.com/cosmtrek/air@v1.51.0
 
 # Копіюємо залежності
 COPY go.* ./
