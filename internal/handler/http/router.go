@@ -54,7 +54,7 @@ func NewRouter(config RouterConfig) *chi.Mux {
 
 			// USERS (/me)
 			userHandler := NewUserHandler(config.UserService)
-			userHandler.RegisterRoutes(r)
+			r.Route("/users", userHandler.RegisterRoutes)
 		})
 
 		// ---------- ADMIN ----------

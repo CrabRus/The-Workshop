@@ -20,11 +20,9 @@ func NewProductHandler(srv product.ProductService) *productHandler {
 }
 
 func (h *productHandler) RegisterRoutes(r chi.Router) {
-	r.Route("/products", func(r chi.Router) {
-		r.Get("/", h.List)
-		r.Get("/{id}", h.GetByID)
-		r.Get("/search", h.Search)
-	})
+	r.Get("/", h.List)
+	r.Get("/{id}", h.GetByID)
+	r.Get("/search", h.Search)
 }
 
 // GET /products
@@ -87,11 +85,9 @@ func NewAdminProductHandler(srv product.ProductService) *adminProductHandler {
 }
 
 func (h *adminProductHandler) RegisterRoutes(r chi.Router) {
-	r.Route("/products", func(r chi.Router) {
-		r.Post("/", h.Create)
-		r.Put("/{id}", h.Update)
-		r.Delete("/{id}", h.Delete)
-	})
+	r.Post("/", h.Create)
+	r.Put("/{id}", h.Update)
+	r.Delete("/{id}", h.Delete)
 }
 
 // POST /admin/products

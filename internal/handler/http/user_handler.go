@@ -23,10 +23,8 @@ func NewUserHandler(srv userSrv.UserService) *userHandler {
 }
 
 func (h *userHandler) RegisterRoutes(r chi.Router) {
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/me", h.GetProfile)
-		r.Put("/me", h.UpdateMe)
-	})
+	r.Get("/me", h.GetProfile)
+	r.Put("/me", h.UpdateMe)
 }
 
 func (h *userHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -78,11 +76,26 @@ func NewAdminUserHandler(srv userSrv.UserService) *adminUserHandler {
 }
 
 func (h *adminUserHandler) RegisterRoutes(r chi.Router) {
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", h.List)
-		r.Put("/{id}", h.UpdateUser)
-		r.Delete("/{id}", h.DeleteUser)
-	})
+	r.Get("/search", h.List)
+	r.Get("/{id}", h.GetUserByID)
+	r.Put("/{id}", h.UpdateUser)
+	r.Delete("/{id}", h.DeleteUser)
+}
+
+func (h *adminUserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	user, err := h.UserSrv.GetProfile(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, user)
 }
 
 func (h *adminUserHandler) List(w http.ResponseWriter, r *http.Request) {
