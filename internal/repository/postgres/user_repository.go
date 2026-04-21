@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	database "github.com/crabrus/the-workshop/internal/db"
-	entity "github.com/crabrus/the-workshop/internal/domain/entity"
+	"github.com/crabrus/the-workshop/internal/domain/entity"
 	repository "github.com/crabrus/the-workshop/internal/domain/repository"
 	"github.com/google/uuid"
 )
