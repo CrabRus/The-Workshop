@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	authService "github.com/crabrus/the-workshop/internal/service/auth"
+	productService "github.com/crabrus/the-workshop/internal/service/product"
 	userService "github.com/crabrus/the-workshop/internal/service/user"
 
 	"github.com/go-chi/chi/middleware"
@@ -11,52 +12,68 @@ import (
 )
 
 type RouterConfig struct {
-	AuthService authService.AuthService
-	UserService userService.UserService
-	// ProductService productService.ProductService
+	AuthService    authService.AuthService
+	UserService    userService.UserService
+	ProductService productService.ProductService
 }
 
 func NewRouter(config RouterConfig) *chi.Mux {
 	r := chi.NewRouter()
 
-	// Global middlewares
+	// ---------- GLOBAL MIDDLEWARES ----------
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(CORS)
 
-	// Health check
+	// ---------- HEALTH ----------
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		respondJSON(w, http.StatusOK, map[string]string{
 			"status": "ok",
 		})
 	})
 
-	// API v1
+	// ---------- API v1 ----------
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public auth routes
+
+		// ---------- PUBLIC ----------
+
+		// AUTH
 		authHandler := NewAuthHandler(config.AuthService)
 		authHandler.RegisterRoutes(r)
 
-		// Protected routes
+		// PRODUCTS (public)
+		productHandler := NewProductHandler(config.ProductService)
+		r.Route("/products", productHandler.RegisterRoutes)
+
+		// ---------- AUTH (USER) ----------
+
 		r.Group(func(r chi.Router) {
 			r.Use(RequireAuth(config.AuthService))
 
-			// User routes
+			// USERS (/me)
 			userHandler := NewUserHandler(config.UserService)
 			userHandler.RegisterRoutes(r)
 		})
 
-		// Admin routes
+		// ---------- ADMIN ----------
+
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(RequireAuth(config.AuthService))
 			r.Use(RequireAdmin)
 
-			// 👉 тут будуть admin handlers (products, orders, users...)
-			// приклад:
-			// adminHandler := NewAdminHandler(...)
-			// adminHandler.RegisterRoutes(r)
+			// ----- ADMIN PRODUCTS -----
+			adminProductHandler := NewAdminProductHandler(config.ProductService)
+			r.Route("/products", adminProductHandler.RegisterRoutes)
+
+			// ----- ADMIN USERS 🔥 -----
+			adminUserHandler := NewAdminUserHandler(config.UserService)
+			r.Route("/users", adminUserHandler.RegisterRoutes)
+
+			// (майбутнє)
+			// /admin/orders
+			// /admin/categories
 		})
 	})
 

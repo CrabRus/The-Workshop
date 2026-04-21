@@ -13,8 +13,9 @@ import (
 	"github.com/crabrus/the-workshop/internal/repository/postgres"
 
 	httpHandler "github.com/crabrus/the-workshop/internal/handler/http"
-	authService "github.com/crabrus/the-workshop/internal/service/auth"
-	userService "github.com/crabrus/the-workshop/internal/service/user"
+	"github.com/crabrus/the-workshop/internal/service/auth"
+	"github.com/crabrus/the-workshop/internal/service/product"
+	"github.com/crabrus/the-workshop/internal/service/user"
 
 	"github.com/joho/godotenv"
 )
@@ -50,15 +51,16 @@ func main() {
 
 	log.Println("Database connection established")
 	userRepo := postgres.NewUserRepository(database)
-	// productRepo := postgres.NewProductRepository(database)
+	productRepo := postgres.NewProductRepository(database)
 
-	authService := authService.NewAuthService(userRepo)
-	userService := userService.NewService(userRepo)
-	// productService :=
+	authService := auth.NewAuthService(userRepo)
+	userService := user.NewService(userRepo)
+	productService := product.NewService(productRepo)
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
-		AuthService: authService,
-		UserService: userService,
+		AuthService:    authService,
+		UserService:    userService,
+		ProductService: productService,
 	})
 
 	server := &http.Server{

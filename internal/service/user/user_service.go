@@ -12,9 +12,12 @@ import (
 
 type UserService interface {
 	GetProfile(ctx context.Context, id uuid.UUID) (*entity.User, error)
-	UpdateProfile(ctx context.Context, id uuid.UUID, req UpdateProfileRequest, isAdmin bool) (*entity.User, error)
+	UpdateProfile(ctx context.Context, id uuid.UUID, req UpdateProfileRequest) (*entity.User, error)
+
+	// admin
 	List(ctx context.Context, filter repository.UserFilter) (*UserListResponse, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateByAdmin(ctx context.Context, id uuid.UUID, req UpdateProfileRequest) (*entity.User, error)
 }
 
 type service struct {
@@ -25,6 +28,8 @@ func NewService(userRepo repository.UserRepository) UserService {
 	return &service{userRepo: userRepo}
 }
 
+// ---------- PUBLIC ----------
+
 func (s *service) GetProfile(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	user, err := s.userRepo.GetByID(ctx, id)
 	if err != nil {
@@ -33,49 +38,38 @@ func (s *service) GetProfile(ctx context.Context, id uuid.UUID) (*entity.User, e
 	return user, nil
 }
 
-func (s *service) UpdateProfile(ctx context.Context, id uuid.UUID, req UpdateProfileRequest, isAdmin bool) (*entity.User, error) {
-
+func (s *service) UpdateProfile(ctx context.Context, id uuid.UUID, req UpdateProfileRequest) (*entity.User, error) {
 	user, err := s.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	// ❗ централізована валідація DTO
 	if err := ValidateUpdateProfile(req); err != nil {
 		return nil, err
 	}
 
-	// EMAIL
-	if req.Email != nil {
-		user.Email = *req.Email
+	applyUserUpdates(user, req, false)
+
+	if err := s.userRepo.Update(ctx, user); err != nil {
+		return nil, fmt.Errorf("failed to update user: %w", err)
 	}
 
-	// PASSWORD
-	if req.Password != nil && *req.Password != "" {
-		hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return nil, fmt.Errorf("failed to hash password: %w", err)
-		}
-		user.PasswordHash = string(hash)
+	return user, nil
+}
+
+// ---------- ADMIN ----------
+
+func (s *service) UpdateByAdmin(ctx context.Context, id uuid.UUID, req UpdateProfileRequest) (*entity.User, error) {
+	user, err := s.userRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	// FIRST NAME
-	if req.FirstName != nil {
-		user.FirstName = *req.FirstName
+	if err := ValidateUpdateProfile(req); err != nil {
+		return nil, err
 	}
 
-	// LAST NAME
-	if req.LastName != nil {
-		user.LastName = *req.LastName
-	}
-
-	// ROLE (тільки адмін)
-	if req.Role != nil {
-		if !isAdmin {
-			return nil, fmt.Errorf("forbidden: only admin can change role")
-		}
-		user.Role = *req.Role
-	}
+	applyUserUpdates(user, req, true)
 
 	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, fmt.Errorf("failed to update user: %w", err)
@@ -110,4 +104,29 @@ func (s *service) List(ctx context.Context, filter repository.UserFilter) (*User
 
 func (s *service) Delete(ctx context.Context, id uuid.UUID) error {
 	return s.userRepo.Delete(ctx, id)
+}
+
+// ---------- SHARED ----------
+
+func applyUserUpdates(user *entity.User, req UpdateProfileRequest, isAdmin bool) {
+	if req.Email != nil {
+		user.Email = *req.Email
+	}
+
+	if req.Password != nil && *req.Password != "" {
+		hash, _ := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
+		user.PasswordHash = string(hash)
+	}
+
+	if req.FirstName != nil {
+		user.FirstName = *req.FirstName
+	}
+
+	if req.LastName != nil {
+		user.LastName = *req.LastName
+	}
+
+	if req.Role != nil && isAdmin {
+		user.Role = *req.Role
+	}
 }

@@ -70,11 +70,11 @@ func (s *service) Create(ctx context.Context, req ProductRequest) (*entity.Produ
 
 	product := &entity.Product{
 		Name:        *req.Name,
-		Description: derefString(req.Description),
+		Description: req.Description,
 		Price:       *req.Price,
 		Stock:       *req.Stock,
 		CategoryID:  *req.CategoryID,
-		Image_url:   derefString(req.ImageURL),
+		Image_url:   req.ImageURL,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
@@ -125,7 +125,7 @@ func (s *service) Update(ctx context.Context, id uuid.UUID, req ProductRequest) 
 	}
 
 	if req.Description != nil {
-		product.Description = *req.Description
+		product.Description = req.Description
 	}
 
 	if req.Price != nil {
@@ -141,7 +141,7 @@ func (s *service) Update(ctx context.Context, id uuid.UUID, req ProductRequest) 
 	}
 
 	if req.ImageURL != nil {
-		product.Image_url = *req.ImageURL
+		product.Image_url = req.ImageURL
 	}
 
 	product.UpdatedAt = time.Now()
