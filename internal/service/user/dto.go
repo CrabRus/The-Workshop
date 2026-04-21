@@ -1,7 +1,7 @@
 package user
 
 import (
-	entity "github.com/crabrus/the-workshop/internal/domain/entity"
+	"github.com/crabrus/the-workshop/internal/domain/entity"
 	"github.com/crabrus/the-workshop/pkg/validator"
 )
 

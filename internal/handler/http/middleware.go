@@ -6,14 +6,8 @@ import (
 	"strings"
 
 	"github.com/crabrus/the-workshop/internal/service/auth"
-	"github.com/google/uuid"
+	"github.com/crabrus/the-workshop/pkg/utils"
 )
-
-type contextKey string
-
-const ContextKeyUserID contextKey = "user_id"
-const ContextKeyUserRole contextKey = "user_role"
-const ContextKeyUserEmail contextKey = "user_email"
 
 func RequireAuth(authSrv auth.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -39,9 +33,9 @@ func RequireAuth(authSrv auth.AuthService) func(http.Handler) http.Handler {
 			}
 
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, ContextKeyUserID, claims.UserID)
-			ctx = context.WithValue(ctx, ContextKeyUserRole, claims.Role)
-			ctx = context.WithValue(ctx, ContextKeyUserEmail, claims.Email)
+			ctx = context.WithValue(ctx, utils.ContextKeyUserID, claims.UserID)
+			ctx = context.WithValue(ctx, utils.ContextKeyUserRole, claims.Role)
+			ctx = context.WithValue(ctx, utils.ContextKeyUserEmail, claims.Email)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
@@ -50,7 +44,7 @@ func RequireAuth(authSrv auth.AuthService) func(http.Handler) http.Handler {
 
 func RequireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		role, ok := r.Context().Value(ContextKeyUserRole).(string)
+		role, ok := r.Context().Value(utils.ContextKeyUserRole).(string)
 		if !ok {
 			respondError(w, http.StatusUnauthorized, "User not authorized")
 			return
@@ -77,19 +71,4 @@ func CORS(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func GetUserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
-	userID, ok := ctx.Value(ContextKeyUserID).(uuid.UUID)
-	return userID, ok
-}
-
-func GetRoleFromContext(ctx context.Context) (string, bool) {
-	role, ok := ctx.Value(ContextKeyUserRole).(string)
-	return role, ok
-}
-
-func GetEmailFromContext(ctx context.Context) (string, bool) {
-	email, ok := ctx.Value(ContextKeyUserEmail).(string)
-	return email, ok
 }

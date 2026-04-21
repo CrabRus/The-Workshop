@@ -10,7 +10,6 @@ import (
 	repository "github.com/crabrus/the-workshop/internal/domain/repository"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -84,7 +83,6 @@ func (a *authService) Register(ctx context.Context, req RegisterRequest) (*Token
 
 	// Create new user
 	user := &entity.User{
-		ID:           uuid.New(),
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
 		FirstName:    req.FirstName,

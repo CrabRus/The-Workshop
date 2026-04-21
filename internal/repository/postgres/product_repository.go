@@ -93,6 +93,24 @@ func (p *productRepo) GetByID(ctx context.Context, id uuid.UUID) (*entity.Produc
 	return &product, nil
 }
 
+// GetByName implements repository.ProductRepository.
+func (p *productRepo) GetByName(ctx context.Context, name string) (*entity.Product, error) {
+	var product entity.Product
+
+	query := `
+		SELECT id, name, description, price, stock, category_id, image_url, created_at, updated_at
+		FROM products
+		WHERE name = $1
+	`
+
+	err := p.db.GetContext(ctx, &product, query, name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get product by name: %w", err)
+	}
+
+	return &product, nil
+}
+
 // List implements repository.ProductRepository.
 func (p *productRepo) List(ctx context.Context, filter repository.ProductFilter) ([]*entity.Product, int, error) {
 	// 1. Формируем WHERE

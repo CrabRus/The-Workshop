@@ -1,16 +1,8 @@
 package validator
 
 import (
-	"errors"
 	"regexp"
 	"unicode/utf8"
-)
-
-var (
-	ErrInvalidEmail   = errors.New("invalid email format")
-	ErrWeakPassword   = errors.New("password must be at least 8 characters")
-	ErrEmptyFirstName = errors.New("first name cannot be empty")
-	ErrEmptyLastName  = errors.New("last name cannot be empty")
 )
 
 func ValidateEmail(email string) error {

@@ -50,13 +50,15 @@ func main() {
 
 	log.Println("Database connection established")
 	userRepo := postgres.NewUserRepository(database)
+	// productRepo := postgres.NewProductRepository(database)
 
-	authSvc := authService.NewAuthService(userRepo)
-	userSvc := userService.NewService(userRepo)
+	authService := authService.NewAuthService(userRepo)
+	userService := userService.NewService(userRepo)
+	// productService :=
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
-		AuthService: authSvc,
-		UserService: userSvc,
+		AuthService: authService,
+		UserService: userService,
 	})
 
 	server := &http.Server{

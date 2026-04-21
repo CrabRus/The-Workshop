@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	entity "github.com/crabrus/the-workshop/internal/domain/entity"
-	repository "github.com/crabrus/the-workshop/internal/domain/repository"
+	"github.com/crabrus/the-workshop/internal/domain/entity"
+	"github.com/crabrus/the-workshop/internal/domain/repository"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )

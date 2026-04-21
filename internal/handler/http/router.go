@@ -13,6 +13,7 @@ import (
 type RouterConfig struct {
 	AuthService authService.AuthService
 	UserService userService.UserService
+	// ProductService productService.ProductService
 }
 
 func NewRouter(config RouterConfig) *chi.Mux {

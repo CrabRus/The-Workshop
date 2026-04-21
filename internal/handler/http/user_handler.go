@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	userSrv "github.com/crabrus/the-workshop/internal/service/user"
+	"github.com/crabrus/the-workshop/pkg/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -25,7 +26,7 @@ func (h *userHandler) RegisterRoutes(r chi.Router) {
 
 // GET /api/v1/users/me
 func (h *userHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := GetUserIDFromContext(r.Context())
+	userID, ok := utils.GetUserIDFromContext(r.Context())
 	if !ok {
 		respondError(w, http.StatusUnauthorized, "User not authorized")
 		return
@@ -42,7 +43,7 @@ func (h *userHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 // PUT /api/v1/users/me
 func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := GetUserIDFromContext(r.Context())
+	userID, ok := utils.GetUserIDFromContext(r.Context())
 	if !ok {
 		respondError(w, http.StatusUnauthorized, "User not authorized")
 		return
