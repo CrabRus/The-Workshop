@@ -19,6 +19,24 @@ type categoryRepo struct {
 	db *database.DB
 }
 
+// GetByName implements repository.CategoryRepository.
+func (c *categoryRepo) GetByName(ctx context.Context, name string) (*entity.Category, error) {
+	var category entity.Category
+
+	query := `
+		SELECT id, name, description, created_at,
+		FROM categories
+		WHERE name = $1
+	`
+
+	err := c.db.GetContext(ctx, &category, query, name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get category by name: %w", err)
+	}
+
+	return &category, nil
+}
+
 func NewCategoryRepo(db *database.DB) repository.CategoryRepository {
 	return &categoryRepo{db: db}
 }

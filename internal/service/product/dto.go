@@ -72,12 +72,3 @@ func ValidateProductUpdate(req ProductRequest) error {
 
 	return nil
 }
-
-// -------------------- HELPERS --------------------
-
-func derefString(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}

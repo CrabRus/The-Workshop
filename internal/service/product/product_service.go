@@ -16,7 +16,7 @@ type ProductService interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Product, error)
 	Create(ctx context.Context, req ProductRequest) (*entity.Product, error)
 	Update(ctx context.Context, id uuid.UUID, req ProductRequest) (*entity.Product, error)
-	Delete(ctx context.Context, id uuid.UUID, isAdmin bool) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type service struct {
@@ -87,7 +87,7 @@ func (s *service) Create(ctx context.Context, req ProductRequest) (*entity.Produ
 }
 
 // Delete implements ProductService.
-func (s *service) Delete(ctx context.Context, id uuid.UUID, isAdmin bool) error {
+func (s *service) Delete(ctx context.Context, id uuid.UUID) error {
 	role, ok := utils.GetRoleFromContext(ctx)
 	if !ok || role != "admin" {
 		return ErrAdminOnly
