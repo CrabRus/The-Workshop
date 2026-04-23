@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	authService "github.com/crabrus/the-workshop/internal/service/auth"
+	cartService "github.com/crabrus/the-workshop/internal/service/cart"
 	categoryService "github.com/crabrus/the-workshop/internal/service/category"
 	productService "github.com/crabrus/the-workshop/internal/service/product"
 	userService "github.com/crabrus/the-workshop/internal/service/user"
@@ -16,6 +17,7 @@ type RouterConfig struct {
 	AuthService     authService.AuthService
 	UserService     userService.UserService
 	ProductService  productService.ProductService
+	CartService     cartService.CartService
 	CategoryService categoryService.CategoryService
 }
 
@@ -61,6 +63,10 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			// USERS (/me)
 			userHandler := NewUserHandler(config.UserService)
 			r.Route("/users", userHandler.RegisterRoutes)
+
+			// CART
+			cartHandler := NewCartHandler(config.CartService)
+			r.Route("/cart", cartHandler.RegisterRoutes)
 		})
 
 		// ---------- ADMIN ----------

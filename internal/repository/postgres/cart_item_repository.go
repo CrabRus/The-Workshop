@@ -37,7 +37,7 @@ func (c *cartItemRepo) Create(ctx context.Context, cartItem *entity.CartItem) er
 
 	return c.db.QueryRowContext(
 		ctx, query,
-		cartItem.ID, cartItem.UserID, cartItem.ProductID,
+		cartItem.ID, cartItem.UserID, cartItem.ProductID, cartItem.Quantity,
 	).Scan(&cartItem.CreatedAt)
 }
 

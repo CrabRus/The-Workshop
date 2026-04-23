@@ -156,12 +156,12 @@ func (p *productRepo) List(ctx context.Context, filter repository.ProductFilter)
 func (p *productRepo) Update(ctx context.Context, product *entity.Product) error {
 	query := `
 		UPDATE products
-		SET name = $1
-			description = $2
-			price = $3
-			stock = $4
-			category_id = $5
-			image_url = $6
+		SET name = $1,
+			description = $2,
+			price = $3,
+			stock = $4,
+			category_id = $5,
+			image_url = $6,
 			updated_at = NOW()
 		WHERE id = $7
 		RETURNING updated_at

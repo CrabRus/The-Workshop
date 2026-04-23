@@ -14,6 +14,7 @@ import (
 
 	httpHandler "github.com/crabrus/the-workshop/internal/handler/http"
 	"github.com/crabrus/the-workshop/internal/service/auth"
+	"github.com/crabrus/the-workshop/internal/service/cart"
 	"github.com/crabrus/the-workshop/internal/service/category"
 	"github.com/crabrus/the-workshop/internal/service/product"
 	"github.com/crabrus/the-workshop/internal/service/user"
@@ -54,16 +55,19 @@ func main() {
 	userRepo := postgres.NewUserRepository(database)
 	productRepo := postgres.NewProductRepository(database)
 	categoryRepo := postgres.NewCategoryRepo(database)
+	cartItemsRepo := postgres.NewCartItemRepository(database)
 
 	authService := auth.NewAuthService(userRepo)
 	userService := user.NewService(userRepo)
 	productService := product.NewService(productRepo)
 	categoryService := category.NewService(categoryRepo)
+	cartService := cart.NewService(cartItemsRepo, productService)
 
 	router := httpHandler.NewRouter(httpHandler.RouterConfig{
 		AuthService:     authService,
 		UserService:     userService,
 		ProductService:  productService,
+		CartService:     cartService,
 		CategoryService: categoryService,
 	})
 
