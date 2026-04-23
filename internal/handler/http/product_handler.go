@@ -22,7 +22,7 @@ func NewProductHandler(srv product.ProductService) *productHandler {
 func (h *productHandler) RegisterRoutes(r chi.Router) {
 	r.Get("/", h.List)
 	r.Get("/{id}", h.GetByID)
-	r.Get("/search", h.Search)
+	// r.Get("/search", h.Search)
 }
 
 // GET /products
@@ -55,24 +55,23 @@ func (h *productHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, res)
 }
 
-// GET /products/search
-func (h *productHandler) Search(w http.ResponseWriter, r *http.Request) {
-	filter := productFilterFromRequest(r)
+// // GET /products/search
+// func (h *productHandler) Search(w http.ResponseWriter, r *http.Request) {
+// 	filter := productFilterFromRequest(r)
 
-	// 🔥 обовʼязково має бути search
-	if filter.Search == "" {
-		respondError(w, http.StatusBadRequest, "search query is required")
-		return
-	}
+// 	if filter.Search == "" {
+// 		respondError(w, http.StatusBadRequest, "search query is required")
+// 		return
+// 	}
 
-	resp, err := h.ProductService.List(r.Context(), filter)
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+// 	resp, err := h.ProductService.List(r.Context(), filter)
+// 	if err != nil {
+// 		respondError(w, http.StatusInternalServerError, err.Error())
+// 		return
+// 	}
 
-	respondJSON(w, http.StatusOK, resp)
-}
+// 	respondJSON(w, http.StatusOK, resp)
+// }
 
 // ---------- ADMIN ----------
 
@@ -139,7 +138,7 @@ func (h *adminProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.ProductService.Delete(r.Context(), id, true); err != nil {
+	if err := h.ProductService.Delete(r.Context(), id); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}

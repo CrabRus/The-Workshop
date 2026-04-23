@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	authService "github.com/crabrus/the-workshop/internal/service/auth"
+	categoryService "github.com/crabrus/the-workshop/internal/service/category"
 	productService "github.com/crabrus/the-workshop/internal/service/product"
 	userService "github.com/crabrus/the-workshop/internal/service/user"
 
@@ -12,9 +13,10 @@ import (
 )
 
 type RouterConfig struct {
-	AuthService    authService.AuthService
-	UserService    userService.UserService
-	ProductService productService.ProductService
+	AuthService     authService.AuthService
+	UserService     userService.UserService
+	ProductService  productService.ProductService
+	CategoryService categoryService.CategoryService
 }
 
 func NewRouter(config RouterConfig) *chi.Mux {
@@ -47,6 +49,10 @@ func NewRouter(config RouterConfig) *chi.Mux {
 		productHandler := NewProductHandler(config.ProductService)
 		r.Route("/products", productHandler.RegisterRoutes)
 
+		//CATEGORIES (public)
+		categoryHandler := NewCategoryHandler(config.CategoryService)
+		r.Route("/categories", categoryHandler.RegisterRoutes)
+
 		// ---------- AUTH (USER) ----------
 
 		r.Group(func(r chi.Router) {
@@ -67,9 +73,13 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			adminProductHandler := NewAdminProductHandler(config.ProductService)
 			r.Route("/products", adminProductHandler.RegisterRoutes)
 
-			// ----- ADMIN USERS 🔥 -----
+			// ----- ADMIN USERS -----
 			adminUserHandler := NewAdminUserHandler(config.UserService)
 			r.Route("/users", adminUserHandler.RegisterRoutes)
+
+			// ----- ADMIN CATEGORIES -----
+			adminCategoryHandler := NewAdminCategoryHandler(config.CategoryService)
+			r.Route("/categories", adminCategoryHandler.RegisterRoutes)
 
 			// (майбутнє)
 			// /admin/orders

@@ -55,3 +55,27 @@ func productFilterFromRequest(r *http.Request) repository.ProductFilter {
 
 	return filter
 }
+
+func categoryFilterFromRequest(r *http.Request) repository.CategoryFilter {
+	q := r.URL.Query()
+
+	filter := repository.CategoryFilter{
+		Search:  q.Get("search"),
+		OrderBy: q.Get("order_by"),
+	}
+
+	// limit
+	if limitStr := q.Get("limit"); limitStr != "" {
+		if limit, err := strconv.Atoi(limitStr); err == nil {
+			filter.Limit = limit
+		}
+	}
+
+	// offset
+	if offsetStr := q.Get("offset"); offsetStr != "" {
+		if offset, err := strconv.Atoi(offsetStr); err == nil {
+			filter.Offset = offset
+		}
+	}
+	return filter
+}
