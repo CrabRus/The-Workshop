@@ -15,11 +15,12 @@ type ProductRepository interface {
 	Update(ctx context.Context, product *entity.Product) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	List(ctx context.Context, filter ProductFilter) ([]*entity.Product, int, error)
+	DecreaseStock(ctx context.Context, id uuid.UUID, quantity int) error
 }
 
 type ProductFilter struct {
 	Search     string
-	CategoryID *string
+	CategoryID *string // !!!!!!!!!!!
 	Limit      int
 	Offset     int
 	OrderBy    string

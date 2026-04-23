@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ProductNotFount = errors.New("product not found")
+	ErrProductNotFount = errors.New("product not found")
 )
 
 type productRepo struct {
@@ -52,7 +52,7 @@ func (p *productRepo) Delete(ctx context.Context, id uuid.UUID) error {
 
 	rows, err := result.RowsAffected()
 	if rows == 0 {
-		return ProductNotFount
+		return ErrProductNotFount
 	}
 	return nil
 }
@@ -174,6 +174,30 @@ func (p *productRepo) Update(ctx context.Context, product *entity.Product) error
 
 	if err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
+	}
+
+	return nil
+}
+
+// DecreaseStock implements repository.ProductRepository.
+func (p *productRepo) DecreaseStock(ctx context.Context, id uuid.UUID, quantity int) error {
+	if quantity <= 0 {
+		return errors.New("quantity must be greater than 0")
+	}
+
+	query := `
+		UPDATE products
+		SET stock = stock - $1,
+			updated_at = NOW()
+		WHERE id = $2 AND stock >= $1
+		RETURNING id
+	`
+
+	var productID uuid.UUID
+	err := p.db.QueryRowContext(ctx, query, quantity, id).Scan(&productID)
+
+	if err != nil {
+		return fmt.Errorf("failed to decrease stock: %w", err)
 	}
 
 	return nil

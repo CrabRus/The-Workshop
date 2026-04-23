@@ -138,7 +138,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// In JWT-based auth, logout is typically handled client-side
 	// by deleting the tokens. This endpoint exists for consistency
 	// and could be used to blacklist tokens in a production system.
-
 	respondJSON(w, http.StatusOK, SuccessResponse{
 		Message: "Logged out successfully",
 	})
