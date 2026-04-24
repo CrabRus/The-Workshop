@@ -6,6 +6,7 @@ import (
 	authService "github.com/crabrus/the-workshop/internal/service/auth"
 	cartService "github.com/crabrus/the-workshop/internal/service/cart"
 	categoryService "github.com/crabrus/the-workshop/internal/service/category"
+	orderService "github.com/crabrus/the-workshop/internal/service/order"
 	productService "github.com/crabrus/the-workshop/internal/service/product"
 	userService "github.com/crabrus/the-workshop/internal/service/user"
 
@@ -19,6 +20,7 @@ type RouterConfig struct {
 	ProductService  productService.ProductService
 	CartService     cartService.CartService
 	CategoryService categoryService.CategoryService
+	OrderService    orderService.OrderService
 }
 
 func NewRouter(config RouterConfig) *chi.Mux {
@@ -67,6 +69,10 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			// CART
 			cartHandler := NewCartHandler(config.CartService)
 			r.Route("/cart", cartHandler.RegisterRoutes)
+
+			// ORDERS
+			orderHandler := NewOrderHandler(config.OrderService)
+			r.Route("/orders", orderHandler.RegisterRoutes)
 		})
 
 		// ---------- ADMIN ----------
@@ -87,9 +93,9 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			adminCategoryHandler := NewAdminCategoryHandler(config.CategoryService)
 			r.Route("/categories", adminCategoryHandler.RegisterRoutes)
 
-			// (майбутнє)
-			// /admin/orders
-			// /admin/categories
+			// ----- ADMIN ORDERS -----
+			adminOrderHandler := NewAdminOrderHandler(config.OrderService)
+			r.Route("/orders", adminOrderHandler.RegisterRoutes)
 		})
 	})
 

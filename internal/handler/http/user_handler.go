@@ -155,6 +155,9 @@ func userFilterFromRequest(r *http.Request) repository.UserFilter {
 	q := r.URL.Query()
 
 	filter := repository.UserFilter{}
+	if search := q.Get("search"); search != "" {
+		filter.Search = search
+	}
 
 	if limit, err := strconv.Atoi(q.Get("limit")); err == nil {
 		filter.Limit = limit
