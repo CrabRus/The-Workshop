@@ -9,6 +9,7 @@ import (
 	"github.com/crabrus/the-workshop/pkg/utils"
 )
 
+// Checking Authorization using Bearer Token
 func RequireAuth(authSrv auth.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +43,7 @@ func RequireAuth(authSrv auth.AuthService) func(http.Handler) http.Handler {
 	}
 }
 
+// Checking admin-role using Bearer Token
 func RequireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		role, ok := r.Context().Value(utils.ContextKeyUserRole).(string)

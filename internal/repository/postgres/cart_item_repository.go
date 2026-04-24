@@ -77,7 +77,6 @@ func (c *cartItemRepo) GetByID(ctx context.Context, id uuid.UUID) (*entity.CartI
 
 // List implements repository.CartItemRepository.
 func (c *cartItemRepo) List(ctx context.Context, filter repository.CartItemFilter) ([]*entity.CartItem, int, error) {
-	// 1. Формируем WHERE условие
 	where := "WHERE 1=1"
 	args := []interface{}{}
 	argID := 1
@@ -92,7 +91,6 @@ func (c *cartItemRepo) List(ctx context.Context, filter repository.CartItemFilte
 		argID++
 	}
 
-	// 2. Формируем ORDER BY
 	orderBy := "created_at DESC"
 	if filter.OrderBy != "" {
 		orderBy = filter.OrderBy
@@ -102,14 +100,12 @@ func (c *cartItemRepo) List(ctx context.Context, filter repository.CartItemFilte
 		orderBy = filter.OrderByquantity
 	}
 
-	// 3. Считаем Total (без LIMIT/OFFSET)
 	var total int
 	countQuery := "SELECT count(*) FROM cart_items " + where
 	if err := c.db.GetContext(ctx, &total, countQuery, args...); err != nil {
 		return nil, 0, fmt.Errorf("failed to count cart items: %w", err)
 	}
 
-	// 4. Получаем данные
 	selectQuery := fmt.Sprintf(
 		"SELECT id, user_id, product_id, quantity, created_at FROM cart_items %s ORDER BY %s",
 		where, orderBy,

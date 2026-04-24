@@ -113,7 +113,6 @@ func (p *productRepo) GetByName(ctx context.Context, name string) (*entity.Produ
 
 // List implements repository.ProductRepository.
 func (p *productRepo) List(ctx context.Context, filter repository.ProductFilter) ([]*entity.Product, int, error) {
-	// 1. Формируем WHERE
 	where := "WHERE 1=1"
 	args := []interface{}{}
 	argID := 1
@@ -130,14 +129,12 @@ func (p *productRepo) List(ctx context.Context, filter repository.ProductFilter)
 		argID += 2
 	}
 
-	// 2. Считаем Total (без LIMIT/OFFSET)
 	var total int
 	countQuery := "SELECT count(*) FROM products " + where
 	if err := p.db.GetContext(ctx, &total, countQuery, args...); err != nil {
 		return nil, 0, err
 	}
 
-	// 3. Получаем данные с пагинацией
 	selectQuery := fmt.Sprintf(
 		"SELECT id, name, description, price, stock, category_id, image_url, created_at, updated_at FROM products %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d",
 		where, argID, argID+1,
@@ -201,4 +198,21 @@ func (p *productRepo) DecreaseStock(ctx context.Context, id uuid.UUID, quantity 
 	}
 
 	return nil
+}
+
+// IncreaseStock increments the product stock atomically
+func (p *productRepo) IncreaseStock(ctx context.Context, id uuid.UUID, quantity int) error {
+	if quantity <= 0 {
+		return errors.New("quantity must be greater than 0")
+	}
+
+	query := `
+		UPDATE products
+		SET stock = stock + $1,
+			updated_at = NOW()
+		WHERE id = $2
+		RETURNING id
+	`
+	var productID uuid.UUID
+	return p.db.QueryRowContext(ctx, query, quantity, id).Scan(&productID)
 }

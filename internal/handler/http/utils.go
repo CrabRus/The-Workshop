@@ -20,6 +20,11 @@ type ErrorResponse struct {
 	Status int    `json:"status"`
 }
 
+// SuccessResponse represents a success response
+type SuccessResponse struct {
+	Message string `json:"message"`
+}
+
 func respondJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

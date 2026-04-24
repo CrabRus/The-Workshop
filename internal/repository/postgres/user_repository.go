@@ -89,7 +89,6 @@ func (u *userRepo) GetByID(ctx context.Context, id uuid.UUID) (*entity.User, err
 
 // List implements UserRepository.
 func (r *userRepo) List(ctx context.Context, f repository.UserFilter) ([]*entity.User, int, error) {
-	// 1. Формируем WHERE
 	where := "WHERE 1=1"
 	args := []interface{}{}
 	argID := 1
@@ -106,14 +105,12 @@ func (r *userRepo) List(ctx context.Context, f repository.UserFilter) ([]*entity
 		argID += 3
 	}
 
-	// 2. Считаем Total (без LIMIT/OFFSET)
 	var total int
 	countQuery := "SELECT count(*) FROM users " + where
 	if err := r.db.GetContext(ctx, &total, countQuery, args...); err != nil {
 		return nil, 0, err
 	}
 
-	// 3. Получаем данные с пагинацией
 	selectQuery := fmt.Sprintf(
 		"SELECT id, email, first_name, last_name, role, created_at, updated_at FROM users %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d",
 		where, argID, argID+1,

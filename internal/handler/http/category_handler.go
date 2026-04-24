@@ -25,6 +25,17 @@ func (h *categoryHandler) RegisterRoutes(r chi.Router) {
 }
 
 // GET /categories
+// @Summary Get a list of categories
+// @Description Retrieve a paginated list of product categories with optional searching
+// @Tags Categories
+// @Accept json
+// @Produce json
+// @Param search query string false "Search term for category name or description"
+// @Param limit query int false "Number of items to return" default(20)
+// @Param offset query int false "Number of items to skip" default(0)
+// @Success 200 {object} category.CategoryListResponse "List of categories"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/categories [get]
 func (h *categoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	filter := categoryFilterFromRequest(r)
 
@@ -37,7 +48,17 @@ func (h *categoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, resp)
 }
 
-// GET /products/{id}
+// GET /categories/{id}
+// @Summary Get category by ID
+// @Description Retrieve detailed information about a single category by its ID
+// @Tags Categories
+// @Accept json
+// @Produce json
+// @Param id path string true "Category ID" format(uuid)
+// @Success 200 {object} map[string]interface{} "Category details"
+// @Failure 400 {object} ErrorResponse "Invalid category ID"
+// @Failure 404 {object} ErrorResponse "Category not found"
+// @Router /api/v1/categories/{id} [get]
 func (h *categoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
@@ -71,6 +92,19 @@ func (h *adminCategoryHandler) RegisterRoutes(r chi.Router) {
 }
 
 // POST /admin/categories
+// @Summary Create a new category (Admin only)
+// @Description Create a new product category. Requires admin role.
+// @Tags Admin - Categories
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body category.CategoryRequest true "Category data"
+// @Success 201 {object} entity.Category "Category created successfully"
+// @Failure 400 {object} ErrorResponse "Invalid input"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/admin/categories [post]
 func (h *adminCategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req category.CategoryRequest
 
@@ -88,30 +122,21 @@ func (h *adminCategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusCreated, res)
 }
 
-// // PUT /admin/products/{id}
-// func (h *adminCategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
-// 	id, err := uuid.Parse(chi.URLParam(r, "id"))
-// 	if err != nil {
-// 		respondError(w, http.StatusBadRequest, "invalid id")
-// 		return
-// 	}
-
-// 	var req category.CategoryRequest
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		respondError(w, http.StatusBadRequest, "invalid body")
-// 		return
-// 	}
-
-// 	res, err := h.CategoryService.Update(r.Context(), id, req)
-// 	if err != nil {
-// 		respondError(w, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-
-// 	respondJSON(w, http.StatusOK, res)
-// }
-
-// DELETE /admin/products/{id}
+// DELETE /admin/categories/{id}
+// @Summary Delete a category (Admin only)
+// @Description Delete a category by its ID. Requires admin role.
+// @Tags Admin - Categories
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Category ID" format(uuid)
+// @Success 200 {object} SuccessResponse "Category deleted successfully"
+// @Failure 400 {object} ErrorResponse "Invalid category ID"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 404 {object} ErrorResponse "Category not found"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/v1/admin/categories/{id} [delete]
 func (h *adminCategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
@@ -124,7 +149,5 @@ func (h *adminCategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "deleted",
-	})
+	respondJSON(w, http.StatusOK, SuccessResponse{Message: "Category deleted successfully"})
 }

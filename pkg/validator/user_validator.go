@@ -1,7 +1,8 @@
 package validator
 
 import (
-	"regexp"
+	"net/mail"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -10,8 +11,15 @@ func ValidateEmail(email string) error {
 		return ErrInvalidEmail
 	}
 
-	re := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	if !re.MatchString(email) {
+	addr, err := mail.ParseAddress(email)
+	if err != nil {
+		return ErrInvalidEmail
+	}
+
+	if addr.Address != email {
+		return ErrInvalidEmail
+	}
+	if len(email) > 254 {
 		return ErrInvalidEmail
 	}
 
@@ -19,9 +27,35 @@ func ValidateEmail(email string) error {
 }
 
 func ValidatePassword(password string) error {
-	if utf8.RuneCountInString(password) < 8 {
+	var (
+		hasMinLen  = utf8.RuneCountInString(password) >= 8
+		hasUpper   = false
+		hasLower   = false
+		hasNumber  = false
+		hasSpecial = false
+	)
+
+	if !hasMinLen {
+		return ErrPasswordTooShort
+	}
+
+	for _, char := range password {
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsNumber(char):
+			hasNumber = true
+		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+			hasSpecial = true
+		}
+	}
+
+	if !hasUpper || !hasLower || !hasNumber || !hasSpecial {
 		return ErrWeakPassword
 	}
+
 	return nil
 }
 

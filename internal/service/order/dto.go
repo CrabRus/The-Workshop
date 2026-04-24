@@ -59,3 +59,16 @@ type OrderListResponse struct {
 	Limit  int         `json:"limit"`
 	Offset int         `json:"offset"`
 }
+
+// StatisticsDTO - статистика для адмін-панелі
+type StatisticsDTO struct {
+	TotalOrders  int             `json:"total_orders"`
+	TotalRevenue float64         `json:"total_revenue"`
+	TopProducts  []TopProductDTO `json:"top_products"`
+}
+
+// TopProductDTO - інформація про популярний товар
+type TopProductDTO struct {
+	ProductName string `json:"product_name"`
+	TotalSold   int    `json:"total_sold"`
+}

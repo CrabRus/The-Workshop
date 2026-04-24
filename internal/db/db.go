@@ -9,6 +9,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Creating database
+
 type DB struct {
 	*sqlx.DB
 }

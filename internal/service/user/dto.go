@@ -12,7 +12,6 @@ type UserListResponse struct {
 	Offset int
 }
 
-// ❗ FIX: додані JSON теги
 type UpdateProfileRequest struct {
 	Email     *string `json:"email"`
 	Password  *string `json:"password"`
@@ -21,7 +20,6 @@ type UpdateProfileRequest struct {
 	Role      *string `json:"role"`
 }
 
-// централізована валідація
 func ValidateUpdateProfile(req UpdateProfileRequest) error {
 	if req.Email != nil {
 		if err := validator.ValidateEmail(*req.Email); err != nil {

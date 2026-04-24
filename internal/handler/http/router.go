@@ -10,8 +10,10 @@ import (
 	productService "github.com/crabrus/the-workshop/internal/service/product"
 	userService "github.com/crabrus/the-workshop/internal/service/user"
 
+	_ "github.com/crabrus/the-workshop/docs"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/swaggo/http-swagger"
 )
 
 type RouterConfig struct {
@@ -32,6 +34,9 @@ func NewRouter(config RouterConfig) *chi.Mux {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(CORS)
+
+	// Swagger UI
+	r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/swagger/doc.json")))
 
 	// ---------- HEALTH ----------
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +101,10 @@ func NewRouter(config RouterConfig) *chi.Mux {
 			// ----- ADMIN ORDERS -----
 			adminOrderHandler := NewAdminOrderHandler(config.OrderService)
 			r.Route("/orders", adminOrderHandler.RegisterRoutes)
+
+			// ----- ADMIN STATISTICS & EXPORT -----
+			adminHandler := NewAdminHandler(config.UserService, config.ProductService, config.OrderService)
+			adminHandler.RegisterRoutes(r)
 		})
 	})
 

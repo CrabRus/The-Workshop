@@ -234,3 +234,51 @@ func (r *orderRepo) Delete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+// GetStatistics повертає агреговані дані про продажі
+func (r *orderRepo) GetStatistics(ctx context.Context) (int, float64, []repository.TopProduct, error) {
+	var stats struct {
+		Count   int     `db:"count"`
+		Revenue float64 `db:"revenue"`
+	}
+
+	// Загальна кількість та дохід (крім скасованих)
+	queryStats := `
+		SELECT 
+			COUNT(*) as count, 
+			COALESCE(SUM(total_amount), 0) as revenue 
+		FROM orders 
+		WHERE status != 'cancelled'
+	`
+	if err := r.db.GetContext(ctx, &stats, queryStats); err != nil {
+		return 0, 0, nil, fmt.Errorf("failed to get general stats: %w", err)
+	}
+
+	// Топ 5 товарів за кількістю продажів
+	queryTop := `
+		SELECT p.name, SUM(oi.quantity) as total_sold
+		FROM order_items oi
+		JOIN products p ON oi.product_id = p.id
+		JOIN orders o ON oi.order_id = o.id
+		WHERE o.status != 'cancelled'
+		GROUP BY p.name
+		ORDER BY total_sold DESC
+		LIMIT 5
+	`
+	var topProducts []repository.TopProduct
+	rows, err := r.db.QueryContext(ctx, queryTop)
+	if err != nil {
+		return 0, 0, nil, fmt.Errorf("failed to get top products: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var tp repository.TopProduct
+		if err := rows.Scan(&tp.Name, &tp.TotalSold); err != nil {
+			return 0, 0, nil, err
+		}
+		topProducts = append(topProducts, tp)
+	}
+
+	return stats.Count, stats.Revenue, topProducts, nil
+}

@@ -23,7 +23,31 @@ func NewUserHandler(srv userSrv.UserService) *userHandler {
 }
 
 func (h *userHandler) RegisterRoutes(r chi.Router) {
+	// @Summary Get current user profile
+	// @Description Retrieve the profile information of the authenticated user.
+	// @Tags Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Success 200 {object} entity.User "User profile"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 404 {object} ErrorResponse "User not found"
+	// @Router /api/v1/users/me [get]
 	r.Get("/me", h.GetProfile)
+
+	// @Summary Update current user profile
+	// @Description Update the profile information of the authenticated user.
+	// @Tags Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Param request body userSrv.UpdateProfileRequest true "Updated user profile data"
+	// @Success 200 {object} entity.User "User profile updated successfully"
+	// @Failure 400 {object} ErrorResponse "Invalid input"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 404 {object} ErrorResponse "User not found"
+	// @Failure 500 {object} ErrorResponse "Internal server error"
+	// @Router /api/v1/users/me [put]
 	r.Put("/me", h.UpdateMe)
 }
 
@@ -76,9 +100,67 @@ func NewAdminUserHandler(srv userSrv.UserService) *adminUserHandler {
 }
 
 func (h *adminUserHandler) RegisterRoutes(r chi.Router) {
+	// @Summary Search and list users (Admin only)
+	// @Description Retrieve a paginated list of users with optional searching and filtering. Requires admin role.
+	// @Tags Admin - Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Param search query string false "Search term for user first name, last name, or email"
+	// @Param limit query int false "Number of items to return" default(20)
+	// @Param offset query int false "Number of items to skip" default(0)
+	// @Success 200 {object} userSrv.UserListResponse "List of users"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 403 {object} ErrorResponse "Forbidden"
+	// @Failure 500 {object} ErrorResponse "Internal server error"
 	r.Get("/search", h.List)
+
+	// @Summary Get user by ID (Admin only)
+	// @Description Retrieve detailed information about a user by their ID. Requires admin role.
+	// @Tags Admin - Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Param id path string true "User ID" format(uuid)
+	// @Success 200 {object} entity.User "User details"
+	// @Failure 400 {object} ErrorResponse "Invalid user ID"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 403 {object} ErrorResponse "Forbidden"
+	// @Failure 404 {object} ErrorResponse "User not found"
+	// @Failure 500 {object} ErrorResponse "Internal server error"
 	r.Get("/{id}", h.GetUserByID)
+
+	// @Summary Update user by ID (Admin only)
+	// @Description Update the profile information of a user by their ID. Requires admin role.
+	// @Tags Admin - Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Param id path string true "User ID" format(uuid)
+	// @Param request body userSrv.UpdateProfileRequest true "Updated user data"
+	// @Success 200 {object} entity.User "User updated successfully"
+	// @Failure 400 {object} ErrorResponse "Invalid input or user ID"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 403 {object} ErrorResponse "Forbidden"
+	// @Failure 404 {object} ErrorResponse "User not found"
+	// @Failure 500 {object} ErrorResponse "Internal server error"
+	// @Router /api/v1/admin/users/{id} [put]
 	r.Put("/{id}", h.UpdateUser)
+
+	// @Summary Delete user by ID (Admin only)
+	// @Description Delete a user by their ID. Requires admin role.
+	// @Tags Admin - Users
+	// @Accept json
+	// @Produce json
+	// @Security BearerAuth
+	// @Param id path string true "User ID" format(uuid)
+	// @Success 200 {object} SuccessResponse "User deleted successfully"
+	// @Failure 400 {object} ErrorResponse "Invalid user ID"
+	// @Failure 401 {object} ErrorResponse "Unauthorized"
+	// @Failure 403 {object} ErrorResponse "Forbidden"
+	// @Failure 404 {object} ErrorResponse "User not found"
+	// @Failure 500 {object} ErrorResponse "Internal server error"
+	// @Router /api/v1/admin/users/{id} [delete]
 	r.Delete("/{id}", h.DeleteUser)
 }
 
@@ -144,9 +226,7 @@ func (h *adminUserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusOK, map[string]string{
-		"status": "deleted",
-	})
+	respondJSON(w, http.StatusOK, SuccessResponse{Message: "User deleted successfully"})
 }
 
 // ---------- FILTER ----------

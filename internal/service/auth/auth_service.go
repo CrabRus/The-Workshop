@@ -8,6 +8,7 @@ import (
 
 	"github.com/crabrus/the-workshop/internal/domain/entity"
 	repository "github.com/crabrus/the-workshop/internal/domain/repository"
+	"github.com/crabrus/the-workshop/pkg/validator"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -43,6 +44,10 @@ func NewAuthService(userRepo repository.UserRepository) AuthService {
 
 // Login implements AuthService.
 func (a *authService) Login(ctx context.Context, req LoginRequest) (*TokenResponse, error) {
+	err := validator.ValidateEmail(req.Email)
+	if err != nil {
+		return nil, err
+	}
 	// Find user by email
 	user, err := a.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
@@ -69,6 +74,10 @@ func (a *authService) Login(ctx context.Context, req LoginRequest) (*TokenRespon
 
 // Register implements AuthService.
 func (a *authService) Register(ctx context.Context, req RegisterRequest) (*TokenResponse, error) {
+	err := ValidateRegister(req)
+	if err != nil {
+		return nil, err
+	}
 	// Check if user already exists
 	existingUser, _ := a.userRepo.GetByEmail(ctx, req.Email)
 	if existingUser != nil {

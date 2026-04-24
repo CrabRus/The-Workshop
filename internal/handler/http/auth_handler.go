@@ -37,8 +37,8 @@ func (h *AuthHandler) RegisterRoutes(r chi.Router) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body service.RegisterRequest true "Registration data"
-// @Success 201 {object} service.AuthResponse
+// @Param request body authService.RegisterRequest true "Registration data"
+// @Success 201 {object} authService.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -67,8 +67,8 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body service.LoginRequest true "Login credentials"
-// @Success 200 {object} service.AuthResponse
+// @Param request body authService.LoginRequest true "Login credentials"
+// @Success 200 {object} authService.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -98,7 +98,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param request body RefreshTokenRequest true "Refresh token"
-// @Success 200 {object} service.AuthResponse
+// @Success 200 {object} authService.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -130,27 +130,19 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 // @Summary Logout user
 // @Description Logout user (client should delete tokens)
 // @Tags auth
-// @Accept json
 // @Produce json
-// @Success 200 {object} SuccessResponse
+// @Success 200 {object} SuccessResponse "Logout successful"
 // @Router /api/v1/auth/logout [post]
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// In JWT-based auth, logout is typically handled client-side
 	// by deleting the tokens. This endpoint exists for consistency
 	// and could be used to blacklist tokens in a production system.
-	respondJSON(w, http.StatusOK, SuccessResponse{
-		Message: "Logged out successfully",
-	})
+	respondJSON(w, http.StatusOK, SuccessResponse{Message: "Logged out successfully"})
 }
 
 // RefreshTokenRequest represents refresh token request
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
-}
-
-// SuccessResponse represents a success response
-type SuccessResponse struct {
-	Message string `json:"message"`
 }
 
 // handleAuthError maps auth service errors to HTTP status codes

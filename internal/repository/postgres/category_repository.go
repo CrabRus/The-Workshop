@@ -106,14 +106,12 @@ func (c *categoryRepo) List(ctx context.Context, filter repository.CategoryFilte
 		argID += 2
 	}
 
-	// 2. Считаем Total (без LIMIT/OFFSET)
 	var total int
 	countQuery := "SELECT count(*) FROM categories " + where
 	if err := c.db.GetContext(ctx, &total, countQuery, args...); err != nil {
 		return nil, 0, err
 	}
 
-	// 3. Получаем данные с пагинацией
 	selectQuery := fmt.Sprintf(
 		"SELECT id, name, description, created_at FROM categories %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d",
 		where, argID, argID+1,

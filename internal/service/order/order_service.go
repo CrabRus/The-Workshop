@@ -22,6 +22,7 @@ type OrderService interface {
 	// Admin methods
 	GetAllOrders(ctx context.Context, filter repository.OrderFilter) (*OrderListResponse, error)
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
+	GetStatistics(ctx context.Context) (*StatisticsDTO, error)
 }
 
 type service struct {
@@ -317,6 +318,27 @@ func (s *service) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, stat
 	}
 
 	return nil
+}
+
+func (s *service) GetStatistics(ctx context.Context) (*StatisticsDTO, error) {
+	count, revenue, topRepo, err := s.orderRepo.GetStatistics(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	topDTO := make([]TopProductDTO, len(topRepo))
+	for i, tp := range topRepo {
+		topDTO[i] = TopProductDTO{
+			ProductName: tp.Name,
+			TotalSold:   tp.TotalSold,
+		}
+	}
+
+	return &StatisticsDTO{
+		TotalOrders:  count,
+		TotalRevenue: revenue,
+		TopProducts:  topDTO,
+	}, nil
 }
 
 // ---------- HELPERS ----------

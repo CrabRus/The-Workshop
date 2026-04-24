@@ -29,19 +29,19 @@ type ShippingAddress struct {
 	AddressLine string `json:"address_line"`
 }
 
-// Scan implements sql.Scanner
-func (sa *ShippingAddress) Scan(value interface{}) error {
-	if value == nil {
-		return nil
-	}
+// // Scan implements sql.Scanner
+// func (sa *ShippingAddress) Scan(value interface{}) error {
+// 	if value == nil {
+// 		return nil
+// 	}
 
-	bytes, ok := value.([]byte)
-	if !ok {
-		return nil
-	}
+// 	bytes, ok := value.([]byte)
+// 	if !ok {
+// 		return nil
+// 	}
 
-	return json.Unmarshal(bytes, sa)
-}
+// 	return json.Unmarshal(bytes, sa)
+// }
 
 // Value implements driver.Valuer
 func (sa ShippingAddress) Value() (driver.Value, error) {

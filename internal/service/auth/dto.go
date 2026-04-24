@@ -1,5 +1,7 @@
 package auth
 
+import "github.com/crabrus/the-workshop/pkg/validator"
+
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
@@ -21,4 +23,16 @@ type TokenResponse struct {
 
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func ValidateRegister(req RegisterRequest) error {
+	err := validator.ValidateEmail(req.Email)
+	if err != nil {
+		return err
+	}
+	err = validator.ValidatePassword(req.Password)
+	if err != nil {
+		return err
+	}
+	return nil
 }
