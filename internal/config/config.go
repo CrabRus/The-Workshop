@@ -29,8 +29,8 @@ type DatabaseConfig struct {
 }
 
 type JWTConfig struct {
-	Secret           string
-	ExpirationHours  int
+	Secret            string
+	ExpirationHours   int
 	RefreshExpiryDays int
 }
 

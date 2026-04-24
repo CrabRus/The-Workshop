@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	authService "github.com/crabrus/the-workshop/internal/service/auth"
+	"github.com/crabrus/the-workshop/internal/service/auth"
 
 	"github.com/go-chi/chi/v5"
 )
 
 // AuthHandler handles HTTP requests for authentication
 type AuthHandler struct {
-	authService authService.AuthService
+	authService auth.AuthService
 }
 
 // NewAuthHandler creates a new auth handler
-func NewAuthHandler(service authService.AuthService) *AuthHandler {
+func NewAuthHandler(service auth.AuthService) *AuthHandler {
 	return &AuthHandler{
 		authService: service,
 	}
@@ -37,15 +37,15 @@ func (h *AuthHandler) RegisterRoutes(r chi.Router) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body authService.RegisterRequest true "Registration data"
-// @Success 201 {object} authService.TokenResponse
+// @Param request body auth.RegisterRequest true "Registration data"
+// @Success 201 {object} auth.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/auth/register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
-	var req authService.RegisterRequest
+	var req auth.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -67,15 +67,15 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body authService.LoginRequest true "Login credentials"
-// @Success 200 {object} authService.TokenResponse
+// @Param request body auth.LoginRequest true "Login credentials"
+// @Success 200 {object} auth.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/auth/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
-	var req authService.LoginRequest
+	var req auth.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -98,7 +98,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param request body RefreshTokenRequest true "Refresh token"
-// @Success 200 {object} authService.TokenResponse
+// @Success 200 {object} auth.TokenResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
@@ -148,16 +148,16 @@ type RefreshTokenRequest struct {
 // handleAuthError maps auth service errors to HTTP status codes
 func handleAuthError(w http.ResponseWriter, err error) {
 	switch err {
-	case authService.ErrEmailRequired,
-		authService.ErrPasswordRequired,
-		authService.ErrWeakPassword:
+	case auth.ErrEmailRequired,
+		auth.ErrPasswordRequired,
+		auth.ErrWeakPassword:
 		respondError(w, http.StatusBadRequest, err.Error())
-	case authService.ErrUserAlreadyExists:
+	case auth.ErrUserAlreadyExists:
 		respondError(w, http.StatusConflict, err.Error())
-	case authService.ErrInvalidCredentials:
+	case auth.ErrInvalidCredentials:
 		respondError(w, http.StatusUnauthorized, err.Error())
-	case authService.ErrInvalidToken,
-		authService.ErrTokenExpired:
+	case auth.ErrInvalidToken,
+		auth.ErrTokenExpired:
 		respondError(w, http.StatusUnauthorized, err.Error())
 	default:
 		respondError(w, http.StatusInternalServerError, "Internal server error")

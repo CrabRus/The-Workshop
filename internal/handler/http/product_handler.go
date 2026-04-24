@@ -56,7 +56,7 @@ func (h *productHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID" format(uuid)
-// @Success 200 {object} product.ProductDTO "Product details"
+// @Success 200 {object} entity.Product "Product details"
 // @Failure 400 {object} ErrorResponse "Invalid product ID"
 // @Failure 404 {object} ErrorResponse "Product not found"
 // @Router /api/v1/products/{id} [get]
@@ -100,7 +100,7 @@ func (h *adminProductHandler) RegisterRoutes(r chi.Router) {
 // @Produce json
 // @Security BearerAuth
 // @Param request body product.ProductRequest true "Product data"
-// @Success 201 {object} product.ProductDTO "Product created successfully"
+// @Success 201 {object} entity.Product "Product created successfully"
 // @Failure 400 {object} ErrorResponse "Invalid input"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 403 {object} ErrorResponse "Forbidden"
@@ -132,7 +132,7 @@ func (h *adminProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Security BearerAuth
 // @Param id path string true "Product ID" format(uuid)
 // @Param request body product.ProductRequest true "Updated product data"
-// @Success 200 {object} product.ProductDTO "Product updated successfully"
+// @Success 200 {object} entity.Product "Product updated successfully"
 // @Failure 400 {object} ErrorResponse "Invalid input or product ID"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 403 {object} ErrorResponse "Forbidden"

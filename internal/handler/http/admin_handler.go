@@ -43,13 +43,13 @@ func (h *AdminHandler) RegisterRoutes(r chi.Router) {
 
 // Statistics DTO
 type Statistics struct {
-	TotalUsers      int     `json:"total_users"`
-	TotalOrders     int     `json:"total_orders"`
-	TotalRevenue    float64 `json:"total_revenue"`
-	TotalProducts   int     `json:"total_products"`
-	OrdersPending   int     `json:"orders_pending"`
-	OrdersShipped   int     `json:"orders_shipped"`
-	OrdersDelivered int     `json:"orders_delivered"`
+	TotalUsers        int     `json:"total_users"`
+	TotalOrders       int     `json:"total_orders"`
+	TotalRevenue      float64 `json:"total_revenue"`
+	TotalProducts     int     `json:"total_products"`
+	OrdersPending     int     `json:"orders_pending"`
+	OrdersShipped     int     `json:"orders_shipped"`
+	OrdersDelivered   int     `json:"orders_delivered"`
 	AverageOrderValue float64 `json:"average_order_value"`
 }
 
@@ -67,7 +67,7 @@ type Statistics struct {
 // @Router /api/v1/admin/statistics [get]
 func (h *AdminHandler) GetStatistics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	// Get user count
 	userFilter := repository.UserFilter{Limit: 1, Offset: 0}
 	userResp, err := h.UserService.List(ctx, userFilter)
@@ -112,7 +112,7 @@ func (h *AdminHandler) GetStatistics(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/admin/export/orders [post]
 func (h *AdminHandler) ExportOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	// Get all orders
 	filter := repository.OrderFilter{Limit: 10000, Offset: 0}
 	ordersResp, err := h.OrderService.GetAllOrders(ctx, filter)
@@ -166,7 +166,7 @@ func (h *AdminHandler) ExportOrders(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/admin/export/products [post]
 func (h *AdminHandler) ExportProducts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	// Get all products
 	filter := repository.ProductFilter{Limit: 10000, Offset: 0}
 	productsResp, err := h.ProductService.List(ctx, filter)
@@ -220,7 +220,7 @@ func (h *AdminHandler) ExportProducts(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/admin/export/users [post]
 func (h *AdminHandler) ExportUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	// Get all users
 	filter := repository.UserFilter{Limit: 10000, Offset: 0}
 	usersResp, err := h.UserService.List(ctx, filter)

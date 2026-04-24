@@ -13,7 +13,7 @@ import (
 	_ "github.com/crabrus/the-workshop/docs"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
-	"github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type RouterConfig struct {
