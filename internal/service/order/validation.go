@@ -1,38 +1,43 @@
 package order
 
 import (
+	"fmt"
+
 	"github.com/crabrus/the-workshop/internal/domain/entity"
 )
 
+// validateShippingAddressField перевіряє, чи є покажчик на рядок nil або вказує на порожній рядок.
+// Вона повертає більш конкретне повідомлення про помилку.
+func validateShippingAddressField(field *string, fieldName string) error {
+	if field == nil || *field == "" {
+		return fmt.Errorf("%w: %s cannot be empty", ErrInvalidAddressData, fieldName)
+	}
+	return nil
+}
+
 func ValidateCreateOrder(req CreateOrderRequest) error {
-	if req.ShippingAddress.FullName == nil || *req.ShippingAddress.FullName == "" {
-		return ErrInvalidAddressData
+	// Валідація полів адреси доставки
+	if err := validateShippingAddressField(req.ShippingAddress.FullName, "Full Name"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.PhoneNumber == nil || *req.ShippingAddress.PhoneNumber == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.PhoneNumber, "Phone Number"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.Email == nil || *req.ShippingAddress.Email == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.Email, "Email"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.Country == nil || *req.ShippingAddress.Country == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.Country, "Country"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.City == nil || *req.ShippingAddress.City == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.City, "City"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.PostalCode == nil || *req.ShippingAddress.PostalCode == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.PostalCode, "Postal Code"); err != nil {
+		return err
 	}
-
-	if req.ShippingAddress.AddressLine == nil || *req.ShippingAddress.AddressLine == "" {
-		return ErrInvalidAddressData
+	if err := validateShippingAddressField(req.ShippingAddress.AddressLine, "Address Line"); err != nil {
+		return err
 	}
-
 	if req.PaymentMethod == nil || *req.PaymentMethod == "" {
 		return ErrInvalidPaymentMethod
 	}

@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/csv"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/crabrus/the-workshop/internal/domain/repository"
@@ -69,16 +70,18 @@ func (h *AdminHandler) GetStatistics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get user count
-	userFilter := repository.UserFilter{Limit: 1, Offset: 0}
-	userResp, err := h.UserService.List(ctx, userFilter)
+	// ПРИМІТКА: Для ефективності, краще мати спеціальний метод CountUsers() у сервісі/репозиторії
+	// замість отримання обмеженого списку для отримання загальної кількості.
+	userResp, err := h.UserService.List(ctx, repository.UserFilter{Limit: 1, Offset: 0})
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to get user statistics")
 		return
 	}
 
 	// Get product count
-	productFilter := repository.ProductFilter{Limit: 1, Offset: 0}
-	productResp, err := h.ProductService.List(ctx, productFilter)
+	// ПРИМІТКА: Для ефективності, краще мати спеціальний метод CountProducts() у сервісі/репозиторії
+	// замість отримання обмеженого списку для отримання загальної кількості.
+	productResp, err := h.ProductService.List(ctx, repository.ProductFilter{Limit: 1, Offset: 0})
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to get product statistics")
 		return
@@ -86,6 +89,9 @@ func (h *AdminHandler) GetStatistics(w http.ResponseWriter, r *http.Request) {
 
 	// Get all orders for statistics
 	allOrdersFilter := repository.OrderFilter{Limit: 1000, Offset: 0}
+	// ПРИМІТКА: Отримання всіх замовлень з фіксованим великим лімітом (1000) може бути неефективним і
+	// призвести до проблем з пам'яттю для дуже великих наборів даних. Розгляньте спеціальний запит для статистики
+	// у сервісі/репозиторії, який агрегує дані безпосередньо з бази даних.
 	allOrdersResp, err := h.OrderService.GetAllOrders(ctx, allOrdersFilter)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to get order statistics")
@@ -114,30 +120,23 @@ func (h *AdminHandler) ExportOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get all orders
-	filter := repository.OrderFilter{Limit: 10000, Offset: 0}
+	// ПРИМІТКА: Отримання всіх замовлень з фіксованим великим лімітом (10000) може бути неефективним і
+	// призвести до проблем з пам'яттю для дуже великих наборів даних. Для дуже великих експортів розгляньте
+	// потокову передачу даних безпосередньо з бази даних або реалізацію фонових завдань експорту.
+	filter := repository.OrderFilter{Limit: 10000, Offset: 0} // Поточний ліміт реалізації
 	ordersResp, err := h.OrderService.GetAllOrders(ctx, filter)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to fetch orders")
 		return
 	}
 
-	// Set CSV headers
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment; filename=orders.csv")
-
-	writer := csv.NewWriter(w)
-	defer writer.Flush()
-
 	// Write header row
 	header := []string{"ID", "User ID", "Status", "Total Amount", "Payment Method", "Created At"}
-	if err := writer.Write(header); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to write CSV header")
-		return
-	}
+	data := make([][]string, len(ordersResp.Orders))
 
 	// Write data rows
-	for _, o := range ordersResp.Orders {
-		row := []string{
+	for i, o := range ordersResp.Orders {
+		data[i] = []string{
 			o.ID.String(),
 			o.UserID.String(),
 			o.Status,
@@ -145,11 +144,9 @@ func (h *AdminHandler) ExportOrders(w http.ResponseWriter, r *http.Request) {
 			o.PaymentMethod,
 			o.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
-		if err := writer.Write(row); err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to write CSV row")
-			return
-		}
 	}
+
+	h.exportToCSV(w, "orders.csv", header, data)
 }
 
 // ExportProducts exports products to CSV
@@ -168,30 +165,23 @@ func (h *AdminHandler) ExportProducts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get all products
-	filter := repository.ProductFilter{Limit: 10000, Offset: 0}
+	// ПРИМІТКА: Отримання всіх продуктів з фіксованим великим лімітом (10000) може бути неефективним і
+	// призвести до проблем з пам'яттю для дуже великих наборів даних. Для дуже великих експортів розгляньте
+	// потокову передачу даних безпосередньо з бази даних або реалізацію фонових завдань експорту.
+	filter := repository.ProductFilter{Limit: 10000, Offset: 0} // Поточний ліміт реалізації
 	productsResp, err := h.ProductService.List(ctx, filter)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to fetch products")
 		return
 	}
 
-	// Set CSV headers
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment; filename=products.csv")
-
-	writer := csv.NewWriter(w)
-	defer writer.Flush()
-
 	// Write header row
 	header := []string{"ID", "Name", "Price", "Stock", "Category ID", "Created At"}
-	if err := writer.Write(header); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to write CSV header")
-		return
-	}
+	data := make([][]string, len(productsResp.Products))
 
 	// Write data rows
-	for _, p := range productsResp.Products {
-		row := []string{
+	for i, p := range productsResp.Products {
+		data[i] = []string{
 			p.ID.String(),
 			p.Name,
 			fmt.Sprintf("%.2f", p.Price),
@@ -199,11 +189,9 @@ func (h *AdminHandler) ExportProducts(w http.ResponseWriter, r *http.Request) {
 			p.CategoryID.String(),
 			p.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
-		if err := writer.Write(row); err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to write CSV row")
-			return
-		}
 	}
+
+	h.exportToCSV(w, "products.csv", header, data)
 }
 
 // ExportUsers exports users to CSV
@@ -222,30 +210,23 @@ func (h *AdminHandler) ExportUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get all users
-	filter := repository.UserFilter{Limit: 10000, Offset: 0}
+	// ПРИМІТКА: Отримання всіх користувачів з фіксованим великим лімітом (10000) може бути неефективним і
+	// призвести до проблем з пам'яттю для дуже великих наборів даних. Для дуже великих експортів розгляньте
+	// потокову передачу даних безпосередньо з бази даних або реалізацію фонових завдань експорту.
+	filter := repository.UserFilter{Limit: 10000, Offset: 0} // Поточний ліміт реалізації
 	usersResp, err := h.UserService.List(ctx, filter)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "failed to fetch users")
 		return
 	}
 
-	// Set CSV headers
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment; filename=users.csv")
-
-	writer := csv.NewWriter(w)
-	defer writer.Flush()
-
 	// Write header row
 	header := []string{"ID", "Email", "First Name", "Last Name", "Role", "Created At"}
-	if err := writer.Write(header); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to write CSV header")
-		return
-	}
+	data := make([][]string, len(usersResp.Users))
 
 	// Write data rows
-	for _, u := range usersResp.Users {
-		row := []string{
+	for i, u := range usersResp.Users {
+		data[i] = []string{
 			u.ID.String(),
 			u.Email,
 			u.FirstName,
@@ -253,11 +234,9 @@ func (h *AdminHandler) ExportUsers(w http.ResponseWriter, r *http.Request) {
 			u.Role,
 			u.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
-		if err := writer.Write(row); err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to write CSV row")
-			return
-		}
 	}
+
+	h.exportToCSV(w, "users.csv", header, data)
 }
 
 // BlockUser blocks a user account
@@ -352,4 +331,28 @@ func (h *AdminHandler) calculateStatistics(totalUsers, totalProducts int, orders
 	stats.AverageOrderValue = totalRevenue / float64(ordersResp.Total)
 
 	return stats
+}
+
+// exportToCSV є допоміжною функцією для запису даних у відповідь CSV.
+// Вона встановлює заголовки Content-Type та Content-Disposition, записує рядок заголовка,
+// а потім записує рядки даних. Помилки під час запису логуються.
+func (h *AdminHandler) exportToCSV(w http.ResponseWriter, filename string, header []string, data [][]string) {
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+
+	writer := csv.NewWriter(w)
+	defer writer.Flush()
+
+	if err := writer.Write(header); err != nil {
+		// Логуємо помилку, але не намагаємося відповісти JSON, оскільки тип контенту вже встановлено на CSV
+		slog.Error("failed to write CSV header", "error", err)
+		return
+	}
+
+	for _, row := range data {
+		if err := writer.Write(row); err != nil {
+			slog.Error("failed to write CSV row", "error", err)
+			return
+		}
+	}
 }

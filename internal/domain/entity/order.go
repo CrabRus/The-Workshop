@@ -3,6 +3,7 @@ package entity
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,19 +30,19 @@ type ShippingAddress struct {
 	AddressLine string `json:"address_line"`
 }
 
-// // Scan implements sql.Scanner
-// func (sa *ShippingAddress) Scan(value interface{}) error {
-// 	if value == nil {
-// 		return nil
-// 	}
+// Scan implements sql.Scanner
+func (sa *ShippingAddress) Scan(value interface{}) error {
+	if value == nil {
+		*sa = ShippingAddress{} // Встановлюємо нульове значення, якщо NULL
+		return nil
+	}
 
-// 	bytes, ok := value.([]byte)
-// 	if !ok {
-// 		return nil
-// 	}
-
-// 	return json.Unmarshal(bytes, sa)
-// }
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("type assertion to []byte failed for ShippingAddress")
+	}
+	return json.Unmarshal(bytes, sa)
+}
 
 // Value implements driver.Valuer
 func (sa ShippingAddress) Value() (driver.Value, error) {
